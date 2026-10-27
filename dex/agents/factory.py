@@ -7,6 +7,7 @@ from .sac import SAC
 from .sqil import SQIL
 from .amp import AMP
 from .awac import AWAC
+from .ppo import PPO
 
 AGENTS = {
     'DDPG': DDPG,
@@ -16,7 +17,8 @@ AGENTS = {
     'SAC': SAC,
     'SQIL': SQIL,
     'AMP': AMP,
-    'AWAC': AWAC
+    'AWAC': AWAC,
+    "PPO": PPO
 }
 
 

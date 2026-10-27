@@ -6,8 +6,8 @@ defaults:
 cwd: ${hydra:runtime.output_dir}
 
 # Training params
-n_train_steps: 100_001
-n_eval: 10
+n_train_steps: 100_000
+n_eval: 500 #number of train intervalls 
 n_save: 5
 n_log: 100
 num_demo: 100
@@ -23,8 +23,8 @@ dont_save: False
 n_eval_episodes: 20
 
 use_wb: True
-project_name: dex
-entity_name: thuang22
+project_name: PPO for Surgery
+entity_name: lmoucca-technical-university-of-munich
 
 # MPI
 mpi: {rank: null, is_chef: null, num_workers: null}

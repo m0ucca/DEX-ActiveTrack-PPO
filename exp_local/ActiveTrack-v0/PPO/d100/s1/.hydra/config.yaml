@@ -1,0 +1,47 @@
+agent:
+  name: PPO
+  device: ${device}
+  discount: 0.99
+  gae_lambda: 0.95
+  reward_scale: 1
+  n_seed_steps: 0
+  actor_lr: 0.0003
+  critic_lr: 0.0003
+  n_rollout_episodes: 20
+  ppo_epochs: 10
+  minibatch_size: 256
+  clip_ratio: 0.2
+  vf_coef: 0.5
+  ent_coef: 0.0
+  max_grad_norm: 0.5
+  target_kl: 0.05
+  clip_obs: 200
+  norm_clip: 5
+  norm_eps: 0.01
+  hidden_dim: 256
+  sampler:
+    type: her
+    strategy: future
+    k: 4
+cwd: ${hydra:runtime.output_dir}
+n_train_steps: 500000
+n_eval: 500
+n_save: 5
+n_log: 100
+num_demo: 100
+n_seed_steps: ${agent.n_seed_steps}
+replay_buffer_capacity: 100000
+batch_size: 128
+device: mps
+seed: 1
+task: ActiveTrack-v0
+postfix: null
+dont_save: false
+n_eval_episodes: 20
+use_wb: true
+project_name: PPO for Surgery
+entity_name: lmoucca-technical-university-of-munich
+mpi:
+  rank: null
+  is_chef: null
+  num_workers: null

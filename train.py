@@ -1,5 +1,6 @@
 import hydra
 from dex.trainers.rl_trainer import RLTrainer
+import surrol.gym
 
 
 @hydra.main(version_base=None, config_path="./dex/configs", config_name="train")

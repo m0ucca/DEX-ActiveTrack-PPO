@@ -1,0 +1,5 @@
+- task=NeedlePick-v0
+- agent=ppo
+- use_wb=False
+- device=cpu
+- n_train_steps=10000

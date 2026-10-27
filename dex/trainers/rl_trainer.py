@@ -64,8 +64,10 @@ class RLTrainer(BaseTrainer):
             self.wb, self.logger, self.termlog = None, None, None
     
     def _setup_misc(self):
-        init_buffer(self.cfg, self.buffer, self.agent, normalize=False) # important for awac, amp
-        init_buffer(self.cfg, self.demo_buffer, self.agent, normalize=True)
+        init_buffer(self.cfg, self.buffer, self.agent, normalize=False)
+
+        if self.cfg.agent.name != "PPO":
+            init_buffer(self.cfg, self.demo_buffer, self.agent, normalize=True)
 
         if self.is_chef:
             self.model_dir = self.work_dir / 'model'
@@ -141,8 +143,11 @@ class RLTrainer(BaseTrainer):
         self._global_episode += int(mpi_sum(1))
 
         # save to buffer
-        self.buffer.store_episode(copy.deepcopy(transitions_batch))
-        self.agent.update_normalizer(copy.deepcopy(transitions_batch))
+        if self.cfg.agent.name == "PPO":
+            self.agent.store_rollout(copy.deepcopy(transitions_batch))
+        else:
+            self.buffer.store_episode(copy.deepcopy(transitions_batch))
+            self.agent.update_normalizer(copy.deepcopy(transitions_batch))
 
         # update policy
         if not seed_until_steps(ep_start_step):

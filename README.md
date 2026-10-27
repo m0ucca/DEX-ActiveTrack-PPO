@@ -1,3 +1,54 @@
+## Setup and Training
+
+### 1. Software Requirements
+
+The code was tested on macOS with an Apple M2 Pro.
+
+- Python 3.10.22
+- PyTorch 2.14.1 with Apple Metal Performance Shaders (MPS) support
+- NumPy 2.2.6
+- PyBullet and SurRoL for robotic simulation
+
+### 2. Create the Conda Environment
+
+Create and activate a dedicated Conda environment:
+
+```bash
+conda create -n dex310 python=3.10
+conda activate dex310
+```
+
+Install the project dependencies using the provided dependency files, if available. If a `requirements-mac.txt` file from the tested environment is provided, install its packages with:
+
+```bash
+python -m pip install -r requirements-mac.txt
+```
+
+**Note:** The environment must include compatible versions of PyTorch, PyBullet, SurRoL, and the other dependencies required by DEX. The original environment was tested on Apple Silicon; other operating systems may require adjustments.
+
+### 3. Run PPO Training
+
+From the root directory of the DEX project, run:
+
+```bash
+python3 train.py task=ActiveTrack-v0 agent=PPO use_wb=False device=mps n_train_steps=100000
+```
+
+Configuration:
+
+- `task=ActiveTrack-v0`: Selects the active tracking task.
+- `agent=PPO`: Uses Proximal Policy Optimization.
+- `use_wb=False`: Disables Weights & Biases logging.
+- `device=mps`: Uses Apple's Metal GPU backend.
+- `n_train_steps=100000`: Sets the training budget to 100,000 environment steps.
+
+For systems without Apple Metal support, try `device=cpu`. For compatible NVIDIA systems, use `device=cuda` if supported by the installed code and PyTorch version.
+
+### 4. Monitoring Training
+
+The training logs report environment steps, completed episodes, episode length, reward, and simulation speed. Episodes may terminate early when the tracked object leaves the defined field of view. Such termination is part of the current task implementation and does not necessarily indicate a software error.
+
+# Original Read me for more information:
 # DEX: Demonstration-Guided RL with Efficient Exploration for Task Automation of Surgical Robot
 This is the official PyTorch implementation of the paper "**Demonstration-Guided Reinforcement Learning with
 Efficient Exploration for Task Automation of Surgical Robot**" (ICRA 2023). 

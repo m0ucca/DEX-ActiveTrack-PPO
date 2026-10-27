@@ -31,12 +31,19 @@ class Sampler:
             if render:
                 render_obs = self._env.render('rgb_array')
             obs, reward, done, info = self._env.step(action)
+            if done:
+                print(
+                    f"done=True at step {self._episode_step + 1}, "
+                    f"reward={reward}, info={info}"
+                )
             episode.append(AttrDict(
                 reward=reward,
-                success=info['is_success'],
+                success=info.get('is_success', False),
                 info=info
             ))
-            self._episode_cache.store_transition(obs, action, done)
+            self._episode_cache.store_transition(
+    obs, action, done, reward=reward
+)
             if render:
                 episode[-1].update(AttrDict(image=render_obs))
 
@@ -46,7 +53,7 @@ class Sampler:
 
         episode[-1].done = True     # make sure episode is marked as done at final time step
         rollouts = self._episode_cache.pop()
-        assert self._episode_step == self._max_episode_len
+        assert self._episode_step <= self._max_episode_len
         return listdict2dictlist(episode), rollouts, self._episode_step
 
     def _episode_reset(self, global_step=None):

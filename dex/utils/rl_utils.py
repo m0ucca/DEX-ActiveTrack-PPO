@@ -7,16 +7,30 @@ from .general_utils import AttrDict, RecursiveAverageMeter
 
 def get_env_params(env, cfg):
     obs = env.reset()
+
+    if isinstance(obs, dict):
+        obs_dim = obs['observation'].shape[0]
+        achieved_goal_dim = obs['achieved_goal'].shape[0]
+        goal_dim = obs['desired_goal'].shape[0]
+        goal_conditioned = True
+    else:
+        obs_dim = obs.shape[0]
+        achieved_goal_dim = 0
+        goal_dim = 0
+        goal_conditioned = False
+
     env_params = AttrDict(
-        obs=obs['observation'].shape[0],
-        achieved_goal=obs['achieved_goal'].shape[0],
-        goal=obs['desired_goal'].shape[0],
+        obs=obs_dim,
+        achieved_goal=achieved_goal_dim,
+        goal=goal_dim,
         act=env.action_space.shape[0],
         act_rand_sampler=env.action_space.sample,
         max_timesteps=env._max_episode_steps,
         max_action=env.action_space.high[0],
+        goal_conditioned=goal_conditioned,
     )
     return env_params
+
 
 
 class ReplayCache:
@@ -26,31 +40,66 @@ class ReplayCache:
 
     def reset(self):
         self.t = 0
-        self.obs, self.ag, self.g, self.actions, self.dones = [], [], [], [], []
+        self.obs, self.ag, self.g = [], [], []
+        self.actions, self.dones, self.rewards = [], [], []
 
-    def store_transition(self, obs, action, done):
-        self.obs.append(obs['observation'])
-        self.ag.append(obs['achieved_goal'])
-        self.g.append(obs['desired_goal'])
+    def store_transition(self, obs, action, done, reward=None):
+        if isinstance(obs, dict):
+            self.obs.append(obs['observation'])
+            self.ag.append(obs['achieved_goal'])
+            self.g.append(obs['desired_goal'])
+        else:
+            self.obs.append(obs)
+            self.ag.append(np.empty(0, dtype=np.float32))
+            self.g.append(np.empty(0, dtype=np.float32))
+
         self.actions.append(action)
         self.dones.append(done)
 
+        if reward is not None:
+            self.rewards.append(reward)
+
+
     def store_obs(self, obs):
-        self.obs.append(obs['observation'])
-        self.ag.append(obs['achieved_goal'])
+        if isinstance(obs, dict):
+            self.obs.append(obs['observation'])
+            self.ag.append(obs['achieved_goal'])
+            self.g.append(obs['desired_goal'])
+        else:
+            self.obs.append(obs)
+            self.ag.append(np.empty(0, dtype=np.float32))
+            self.g.append(np.empty(0, dtype=np.float32))
 
     def pop(self):
-        assert len(self.obs) == self.T + 1 and len(self.actions) == self.T
+        assert len(self.obs) == len(self.actions) + 1
+        assert len(self.actions) == len(self.dones)
+
+        if self.rewards:
+            assert len(self.actions) == len(self.rewards)
         obs = np.expand_dims(np.array(self.obs.copy()),axis=0)
         ag = np.expand_dims(np.array(self.ag.copy()), axis=0)
         #print(self.ag)
-        g = np.expand_dims(np.array(self.g.copy()), axis=0)
+        if self.g and len(self.g[0]) == 0:
+            # Nicht Goal-conditioned task, e.g. ActiveTrack
+            g = np.empty((1, self.T, 0), dtype=np.float32)
+        else:
+            # Keep the original behavior for GoalEnv tasks
+            g = np.expand_dims(np.array(self.g.copy()), axis=0)
         actions = np.expand_dims(np.array(self.actions.copy()), axis=0)
         dones = np.expand_dims(np.array(self.dones.copy()), axis=1)
         dones = np.expand_dims(dones, axis=0)
-
+        rewards = np.expand_dims(
+            np.asarray(self.rewards, dtype=np.float32), axis=0
+        )
         self.reset()
-        episode = AttrDict(obs=obs, ag=ag, g=g, actions=actions, dones=dones)
+        episode = AttrDict(
+            obs=obs,
+            ag=ag,
+            g=g,
+            actions=actions,
+            dones=dones,
+            rewards=rewards,
+        )
         return episode
 
     

@@ -1,0 +1,5 @@
+- task=ActiveTrack-v0
+- agent=ddpg
+- use_wb=False
+- device=cpu
+- n_train_steps=100

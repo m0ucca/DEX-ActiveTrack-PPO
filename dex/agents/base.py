@@ -96,3 +96,7 @@ class BaseAgent(nn.Module):
 
     def sync_networks(self):
         sync_networks(self)
+
+    def store_rollout(self, episode_batch):
+        '''Hook for on-policy agents to keep fresh episodes (no-op for off-policy agents)'''
+        pass

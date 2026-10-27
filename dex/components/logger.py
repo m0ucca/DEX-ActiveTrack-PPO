@@ -76,7 +76,7 @@ class WandBLogger:
 
         logger.info("Init wandb")
         wandb.init(
-            resume=exp_name,
+            name=exp_name,
             project=project_name,
             config=filtered_config,
             dir=path,

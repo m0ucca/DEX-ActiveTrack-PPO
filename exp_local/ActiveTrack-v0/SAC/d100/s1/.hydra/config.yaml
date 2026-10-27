@@ -1,0 +1,43 @@
+agent:
+  name: SAC
+  device: ${device}
+  discount: 0.99
+  reward_scale: 1
+  n_seed_steps: 1000
+  actor_lr: 0.0001
+  critic_lr: 0.0001
+  alpha_lr: 0.0001
+  soft_target_tau: 0.005
+  learnable_temperature: true
+  init_temperature: 0.1
+  clip_obs: 200
+  norm_clip: 5
+  norm_eps: 0.01
+  hidden_dim: 256
+  sampler:
+    type: her
+    strategy: future
+    k: 4
+  update_epoch: 40
+cwd: ${hydra:runtime.output_dir}
+n_train_steps: 100
+n_eval: 10
+n_save: 5
+n_log: 100
+num_demo: 100
+n_seed_steps: ${agent.n_seed_steps}
+replay_buffer_capacity: 100000
+batch_size: 128
+device: cpu
+seed: 1
+task: ActiveTrack-v0
+postfix: null
+dont_save: false
+n_eval_episodes: 20
+use_wb: false
+project_name: dex
+entity_name: lmoucca
+mpi:
+  rank: null
+  is_chef: null
+  num_workers: null
