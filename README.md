@@ -31,7 +31,7 @@ python -m pip install -r requirements-mac.txt
 From the root directory of the DEX project, run:
 
 ```bash
-python3 train.py task=ActiveTrack-v0 agent=PPO use_wb=False device=mps n_train_steps=100000
+python3 train.py task=ActiveTrack-v0 agent=PPO use_wb=False device=mps n_train_steps=500000
 ```
 
 Configuration:

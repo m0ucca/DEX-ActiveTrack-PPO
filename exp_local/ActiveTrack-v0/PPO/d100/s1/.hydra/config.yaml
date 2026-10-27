@@ -38,7 +38,7 @@ task: ActiveTrack-v0
 postfix: null
 dont_save: false
 n_eval_episodes: 20
-use_wb: true
+use_wb: false
 project_name: PPO for Surgery
 entity_name: lmoucca-technical-university-of-munich
 mpi:
