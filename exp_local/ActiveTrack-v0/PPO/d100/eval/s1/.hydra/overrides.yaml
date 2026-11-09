@@ -1,0 +1,5 @@
+- task=ActiveTrack-v0
+- agent=PPO
+- ckpt_episode=latest
+- device=mps
+- use_wb=True

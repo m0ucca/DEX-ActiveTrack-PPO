@@ -1,3 +1,9 @@
+# DEX: Demonstration-Guided RL with Efficient Exploration for Task Automation of Surgical Robot
+
+This repository is based on the official PyTorch implementation of the paper **"Demonstration-Guided Reinforcement Learning with Efficient Exploration for Task Automation of Surgical Robot" (ICRA 2023).**
+
+The original implementation was adapted to run on macOS with Apple Silicon and to support PPO training on the `ActiveTrack-v0` task.
+
 ## Setup and Training
 
 ### 1. Software Requirements
@@ -26,7 +32,20 @@ python -m pip install -r requirements-mac.txt
 
 **Note:** The environment must include compatible versions of PyTorch, PyBullet, SurRoL, and the other dependencies required by DEX. The original environment was tested on Apple Silicon; other operating systems may require adjustments.
 
-### 3. Run PPO Training
+### 3. Implementation and Modifications
+
+The original DEX implementation was adapted to run on macOS with Apple Silicon (M2 Pro) and to support the `ActiveTrack-v0` task using PPO.
+
+The following modifications and configurations were made:
+
+- **Environment compatibility:** Adapted the original Ubuntu-based setup to work on macOS with Python 3.10 and Apple Silicon.
+- **PyTorch backend:** Configured the training pipeline to support Apple's Metal Performance Shaders (MPS) backend instead of CUDA.
+- **Dependency management:** Set up a dedicated Conda environment and installed the required dependencies for the DEX and SurRoL simulation environments.
+- **Task configuration:** Configured the training pipeline to run the `ActiveTrack-v0` environment with PPO, which was not implemented in the original paper.
+
+These changes allow the original DEX framework to be used for PPO training in the adapted simulation setup.
+
+### 4. Run PPO Training
 
 From the root directory of the DEX project, run:
 
@@ -40,165 +59,228 @@ Configuration:
 - `agent=PPO`: Uses Proximal Policy Optimization.
 - `use_wb=False`: Disables Weights & Biases logging.
 - `device=mps`: Uses Apple's Metal GPU backend.
-- `n_train_steps=100000`: Sets the training budget to 100,000 environment steps.
+- `n_train_steps=500000`: Sets the training budget to 500,000 environment steps.
 
 For systems without Apple Metal support, try `device=cpu`. For compatible NVIDIA systems, use `device=cuda` if supported by the installed code and PyTorch version.
 
-### 4. Monitoring Training
+### 5. Monitoring Training
 
 The training logs report environment steps, completed episodes, episode length, reward, and simulation speed. Episodes may terminate early when the tracked object leaves the defined field of view. Such termination is part of the current task implementation and does not necessarily indicate a software error.
 
-# Original Read me for more information:
-# DEX: Demonstration-Guided RL with Efficient Exploration for Task Automation of Surgical Robot
-This is the official PyTorch implementation of the paper "**Demonstration-Guided Reinforcement Learning with
-Efficient Exploration for Task Automation of Surgical Robot**" (ICRA 2023). 
-<p align="left">
-  <img width="98%" src="docs/resources/dex_teaser.png">
-</p>
+### 6. Model Evaluation
 
-# Prerequisites
-* Ubuntu 18.04
-* Python 3.7+
+After training, the saved PPO checkpoint can be evaluated using the provided evaluation script.
 
+To evaluate the latest checkpoint for `ActiveTrack-v0`, run:
 
-# Installation Instructions
+```bash
+python3 eval.py task=ActiveTrack-v0 agent=PPO ckpt_episode=latest device=mps
+```
 
-1. Clone this repository.
+The checkpoint to be evaluated can also be specified manually using `ckpt_episode` instead of `latest`.
+
+## Original DEX Implementation
+
+### Prerequisites
+
+The original implementation specifies:
+
+- Ubuntu 18.04
+- Python 3.7+
+
+### Original Installation Instructions
+
+1. Clone the repository:
+
 ```bash
 git clone --recursive https://github.com/med-air/DEX.git
 cd DEX
 ```
 
-2. Create a virtual environment
+2. Create a virtual environment:
+
 ```bash
 conda create -n dex python=3.8
 conda activate dex
 ```
 
-3. Install packages
+3. Install packages:
 
 ```bash
-pip3 install -e SurRoL/	# install surrol environments
+pip3 install -e SurRoL/
 pip3 install -r requirements.txt
 pip3 install -e .
 ```
 
-4. Then add one line of code at the top of `gym/gym/envs/__init__.py` to register SurRoL tasks:
+4. Add the following line to `gym/gym/envs/__init__.py` to register SurRoL tasks:
 
 ```python
-# directory: anaconda3/envs/dex/lib/python3.8/site-packages/
 import surrol.gym
 ```
 
-# Usage
-Commands for DEX and all baselines. Results will be logged to WandB. Before running the commands below, please change the wandb entity in [```train.yaml```](dex/configs/train.yaml#L26) to match your account.
+The file is located in the installed Gym package directory, typically:
 
-We collect demonstration data via the scripted controllers provided by SurRoL. Take the NeedlePick task as example:
+```text
+anaconda3/envs/dex/lib/python3.8/site-packages/
+```
+
+### Original Usage
+
+The original implementation supports demonstration data collection through the scripted controllers provided by SurRoL.
+
+For example, to collect demonstration data for the NeedlePick task:
+
 ```bash
 mkdir SurRoL/surrol/data/demo
-python SurRoL/surrol/data/data_generation.py --env NeedlePick-v0 
+python SurRoL/surrol/data/data_generation.py --env NeedlePick-v0
 ```
-## Training Commands 
 
-- Train **DEX**:
+### Original Training Commands
+
+The original DEX repository provides training implementations for several reinforcement learning algorithms.
+
+Train **DEX**:
+
 ```bash
 python3 train.py task=NeedlePick-v0 agent=dex use_wb=True
 ```
 
-- Train **SAC**:
+Train **SAC**:
+
 ```bash
 python3 train.py task=NeedlePick-v0 agent=sac use_wb=True
 ```
 
-- Train **DDPG**:
+Train **DDPG**:
+
 ```bash
 python3 train.py task=NeedlePick-v0 agent=ddpg use_wb=True
 ```
 
-- Train **DDPGBC**:
+Train **DDPGBC**:
+
 ```bash
 python3 train.py task=NeedlePick-v0 agent=ddpgbc use_wb=True
 ```
 
-- Train **CoL**:
+Train **CoL**:
+
 ```bash
 python3 train.py task=NeedlePick-v0 agent=col use_wb=True
 ```
 
-- Train **AMP**:
+Train **AMP**:
+
 ```bash
 python3 train.py task=NeedlePick-v0 agent=amp use_wb=True
 ```
 
-- Train **AWAC**:
+Train **AWAC**:
+
 ```bash
 python3 train.py task=NeedlePick-v0 agent=awac use_wb=True
 ```
 
-- Train **SQIL**:
+Train **SQIL**:
+
 ```bash
 python3 train.py task=NeedlePick-v0 agent=sqil use_wb=True
 ```
 
-Again, all commands can be run on other surgical tasks by replacing NeedlePick with the respective environment in the commands (for both demo collection and RL training).
+All commands can also be used with other surgical tasks by replacing `NeedlePick-v0` with the respective environment.
 
-We also implement synchronous parallelization of RL training, e.g., launch 4 parallel training processes:
-```
+Before running the original commands with Weights & Biases logging enabled, update the WandB entity in `dex/configs/train.yaml` to match your account.
+
+### Parallel Training
+
+The original implementation also supports synchronous parallelization of RL training. For example, to launch four parallel training processes:
+
+```bash
 mpirun -np 4 python -m train agent=dex task=NeedlePick-v0 use_wb=True
 ```
-It should be noted that parallel training will lead to inconsistent performance, which require hyperparameters tuning.
 
-## Evaluation Commands
-We also provide a script for evaluate the saved model. The directory of the to-be-evaluated model should be included in the configuration file [```eval.yaml```](dex/configs/eval.yaml), where the checkpoint is specified by `ckpt_episode`. For instance:
-- Eval model trained by **DEX** in NeedlePick-v0:
+Parallel training may lead to inconsistent performance and can require additional hyperparameter tuning.
+
+### Original Evaluation Commands
+
+The original repository also provides an evaluation script for saved models.
+
+The directory of the model to be evaluated must be specified in `dex/configs/eval.yaml`, where the checkpoint is selected using `ckpt_episode`.
+
+For example, to evaluate a DEX model trained on NeedlePick:
+
 ```bash
 python3 eval.py task=NeedlePick-v0 agent=dex ckpt_episode=latest
 ```
 
-# Starting to Modify the Code
-## Modifying the hyperparameters
-The default hyperparameters are defined in `dex/configs`, where [```train.yaml```](dex/configs/train.yaml) defines the experiment settings and YAML file in the directory [```agent```](dex/configs/agent) defines the hyperparameters of each method. Modifications to these parameters can be directly defined in the experiment or agent config files, or passed through the terminal command. For example:
+## Starting to Modify the Code
+
+### Modifying the Hyperparameters
+
+The default hyperparameters are defined in `dex/configs`.
+
+- `train.yaml` defines the experiment settings.
+- The YAML files in `dex/configs/agent` define the hyperparameters of each algorithm.
+
+Parameters can be modified directly in the experiment or agent configuration files, or passed through the terminal command.
+
+For example:
+
 ```bash
 python3 train.py task=NeedleRegrasp-v0 agent=dex use_wb=True batch_size=256 agent.aux_weight=10
 ```
-## Adding a new RL algorithm
-The core RL algorithms are implemented within the `BaseAgent` class. For adding a new algorithm, a new file needs to be created in
-`dex/agents` and [```BaseAgent```](dex/agents/base.py#L8) needs to be subclassed. In particular, any required
-networks (actor, critic etc) need to be constructed and the `update(...)` function and `get_action(...)` needs to be overwritten. For an example, 
-see the DDPGBC implementation in [```DDPGBC```](dex/agents/ddpgbc.py#L7). When implementation is done, a registration is needed in [```factory.py```](dex/agents/factory.py) and a config file should also be made in [```agent```](dex/configs/agent) to specify the model parameters. 
 
-## Transfering to other simulation platform
-Our code is designed for standard goal-conditioned gym-based environments and can be easily transfered to other platform if provide the same interfaces (e.g., OpenAI gym fetch). If no similar interface is provided, some modifications should be made to make it compatible, e.g., replay buffer and sampling utilities. We will make our code more generalizable in the future.
+### Adding a New RL Algorithm
 
-# Code Navigation
+The core RL algorithms are implemented within the `BaseAgent` class.
 
-```
+To add a new algorithm:
+
+1. Create a new file in `dex/agents`.
+2. Subclass `BaseAgent` from `dex/agents/base.py`.
+3. Implement the required networks (e.g., actor and critic).
+4. Override the `update(...)` and `get_action(...)` functions.
+5. Register the new algorithm in `dex/agents/factory.py`.
+6. Create a corresponding configuration file in `dex/configs/agent`.
+
+For an example, see the DDPGBC implementation in `dex/agents/ddpgbc.py`.
+
+### Transferring to Other Simulation Platforms
+
+The code is designed for standard goal-conditioned Gym-based environments and can be transferred to other platforms that provide compatible interfaces (e.g., OpenAI Gym Fetch).
+
+If no compatible interface is provided, modifications may be necessary, for example to the replay buffer and sampling utilities.
+
+## Code Navigation
+
+```text
 dex
-  |- agents                # implements core algorithms in agent classes
-  |- components            # reusable infrastructure for model training
-  |    |- checkpointer.py  # handles saving + loading of model checkpoints
-  |    |- normalizer.py    # normalizer for vectorized input
-  |    |- logger.py        # implements core logging functionality using wandB
-  |
-  |- configs               # experiment configs 
-  |    |- train.yaml       # configs for rl training
-  |    |- eval.yaml        # configs for rl evaluation
-  |    |- agent            # configs for each algorithm (dex, ddpg, ddpgbc, etc.)
-  |
-  |- modules               # reusable architecture components
-  |    |- critic.py        # basic critic implementations (eg MLP-based critic)
-  |    |- distributions.py # pytorch distribution utils for density model
-  |    |- policy.py    	   # basic actor implementations
-  |    |- replay_buffer.py # her replay buffer with future sampling strategy
-  |    |- sampler.py       # rollout sampler for collecting experience
-  |    |- subnetworks.py   # basic networks
-  |
-  |- trainers              # main model training script, builds all components + runs training loop and logging
-  |
-  |- utils                 # general and rl utilities, pytorch / visualization utilities etc
-  |- train.py              # experiment launcher
-  |- eval.py               # evaluation launcher
+ |-- agents                # Implements core algorithms in agent classes
+ |-- components            # Reusable training infrastructure
+ |   |-- checkpointer.py   # Handles saving and loading model checkpoints
+ |   |-- normalizer.py     # Normalizer for vectorized input
+ |   |-- logger.py         # Logging functionality using WandB
+ |
+ |-- configs               # Experiment configurations
+ |   |-- train.yaml        # Configurations for RL training
+ |   |-- eval.yaml         # Configurations for RL evaluation
+ |   |-- agent             # Configurations for each algorithm
+ |
+ |-- modules               # Reusable architecture components
+ |   |-- critic.py         # Basic critic implementations
+ |   |-- distributions.py  # PyTorch distribution utilities
+ |   |-- policy.py         # Basic actor implementations
+ |   |-- replay_buffer.py  # HER replay buffer with future sampling
+ |   |-- sampler.py        # Rollout sampler for collecting experience
+ |   |-- subnetworks.py    # Basic neural network components
+ |
+ |-- trainers              # Main training script and training loop
+ |
+ |-- utils                 # General RL and visualization utilities
+ |-- train.py              # Experiment launcher
+ |-- eval.py               # Evaluation launcher
 ```
 
-# Contact
-For any questions, please feel free to email taou.cs13@gmail.com.
+## Contact
+
+For questions regarding the original implementation, please contact: taou.cs13@gmail.com.

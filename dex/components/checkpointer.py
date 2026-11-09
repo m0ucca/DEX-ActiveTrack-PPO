@@ -47,7 +47,11 @@ class CheckpointHandler:
     def load_checkpoint(checkpt_dir, agent, device, episode='best'):
         """Loads weigths from checkpoint."""
         checkpt_path, max_episode = CheckpointHandler.get_resume_ckpt_file(episode, checkpt_dir)
-        checkpt = torch.load(checkpt_path, map_location=device)
+        checkpt = torch.load(
+            checkpt_path,
+            map_location=device,
+            weights_only=False
+        )
     
         logger.info(f'Loading pre-trained model from {checkpt_path}!')
         agent.load_state_dict(checkpt['state_dict'])
